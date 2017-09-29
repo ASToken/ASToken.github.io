@@ -1,0 +1,96 @@
+import cv2
+import numpy as np
+
+
+
+fltrone=np.zeros((3,3),np.int)   #initialize first filter, and fill the matrix (make the image more smooth)
+        fltrone[0,0] = 1
+        fltrone[0,1] = 2
+        fltrone[0,2] = 1
+        fltrone[1,0] = 2
+        fltrone[1,1] = 4
+        fltrone[1,2] = 2
+        fltrone[2,0] = 1
+        fltrone[2,1] = 2
+        fltrone[2,2] = 1
+fltrtwo=np.zeros((3,3),np.int) #initialize second filter, and fill the matrix (edge detection filter)
+        fltrtwo[0,0] = -1
+        fltrtwo[0,1] = -1
+        fltrtwo[0,2] = -1
+        fltrtwo[1,0] = -1
+        fltrtwo[1,1] = 8
+        fltrtwo[1,2] = -1
+        fltrtwo[2,0] = -1
+        fltrtwo[2,1] = -1
+        fltrtwo[2,2] = -1
+fltrthree=np.zeros((3,3),np.int) #initialize third filter , and fill the matrix (increases sharpeness of the image)
+        fltrthree[0,0] = 0
+        fltrthree[0,1] =-1
+        fltrthree[0,2] = 0
+        fltrthree[1,0] =-1
+        fltrthree[1,1] = 8
+        fltrthree[1,2] =-1
+        fltrthree[2,0] = 0
+        fltrthree[2,1] =-1
+        fltrthree[2,2] = 0        
+
+#applyfltr simply multiplies one of the filters with the input image and results in a filtered image
+def applyfltr (img,fltr,num):
+    unfilter_img = cv2.imread(img)
+    B,G,R= cv2.split(unfilter_img)
+    rs,cs = R.shape
+    filter_img=np.zeros((rows,columns,3),np.uint8)
+    for i in range (2,rs-1):
+        for j in range (2,cs-1):
+            fltrB = num*(B[i-1,j-1]*fltr[0,0]
+                       +B[i-1,j]*fltr[0,1]
+                       +B[i-1,j+1]*fltr[0,2]
+                       +B[i,j-1]*fltr[1,0]
+                       +B[i,j]*fltr[1,1]
+                       +B[i,j+1]*fltr[1,2]
+                       +B[i+1,j-1]*fltr[2,0]
+                       +B[i+1,j]*fltr[2,1]
+                       +B[i+1,j+1]*fltr[2,2])
+            if fltrB<0:
+                filter_img[i,j,0]=0
+            elif fltrB>255:
+                filter_img[i,j,0]=255
+            else:
+                filter_img[i,j,0]=fltrB
+
+            fltrR = num*(R[i-1,j-1]*fltr[0,0]
+                       +R[i-1,j]*fltr[0,1]
+                       +R[i-1,j+1]*fltr[0,2]
+                       +R[i,j-1]*fltr[1,0]
+                       +R[i,j]*fltr[1,1]
+                       +R[i,j+1]*fltr[1,2]
+                       +R[i+1,j-1]*fltr[2,0]
+                       +R[i+1,j]*fltr[2,1]
+                       +R[i+1,j+1]*fltr[2,2])
+            if fltrR<0:
+                filter_img[i,j,2]=0
+            elif fltrR>255:
+                filter_img[i,j,2]=255
+            else:
+                filter_img[i,j,2]=fltrR
+
+
+            fltrG = num*(G[i-1,j-1]*fltr[0,0]
+                       +G[i-1,j]*fltr[0,1]
+                       +G[i-1,j+1]*fltr[0,2]
+                       +G[i,j-1]*fltr[1,0]
+                       +G[i,j]*fltr[1,1]
+                       +G[i,j+1]*fltr[1,2]
+                       +G[i+1,j-1]*fltr[2,0]
+                       +G[i+1,j]*fltr[2,1]
+                       +G[i+1,j+1]*fltr[2,2])
+            if fltrG<0:
+                filter_img[i,j,1]=0
+            elif fltrG>255:
+                filter_img[i,j,1]=255
+            else:
+                filter_img[i,j,1]=fltrG
+
+    cv2.imwrite('filtered_img.jpg',filter_img)     
+    cv2.imshow('filtered_img.jpg',filter_img)     
+    
